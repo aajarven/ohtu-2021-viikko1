@@ -38,3 +38,51 @@ class TestVarasto(unittest.TestCase):
 
         # varastossa pitäisi olla tilaa 10 - 8 + 2 eli 4
         self.assertAlmostEqual(self.varasto.paljonko_mahtuu(), 4)
+
+    def test_negatiivinen_lisays_ei_vaikuta(self):
+        self.varasto.lisaa_varastoon(-10)
+        self.assertAlmostEqual(self.varasto.saldo, 0)
+
+    def test_ylitaytto_ei_mahdollista(self):
+        self.varasto.lisaa_varastoon(99)
+        self.assertAlmostEqual(self.varasto.saldo, 10)
+
+    def test_negatiivinen_otto_ei_palauta_tavaraa(self):
+        saatu_maara = self.varasto.ota_varastosta(-1)
+        self.assertAlmostEqual(saatu_maara, 0)
+
+    def test_negatiivinen_otto_ei_vahenna_saldoa(self):
+        self.varasto.lisaa_varastoon(8)
+        self.varasto.ota_varastosta(-1)
+        self.assertAlmostEqual(self.varasto.saldo, 8)
+
+    def test_varasto_palauttaa_korkeintaan_saldon_verran_tavaraa(self):
+        self.varasto.lisaa_varastoon(8)
+        saatu_maara = self.varasto.ota_varastosta(10)
+        self.assertAlmostEqual(saatu_maara, 8)
+
+    def test_tyhjan_varaston_str(self):
+        self.assertEqual(str(self.varasto),
+                         "saldo = 0, vielä tilaa 10")
+
+    def test_vajaan_varaston_str(self):
+        self.varasto.lisaa_varastoon(8)
+        self.assertEqual(str(self.varasto),
+                         "saldo = 8, vielä tilaa 2")
+
+
+class TestNegatiivisenTilavuudenVarasto(unittest.TestCase):
+
+    def setUp(self):
+        self.varasto = Varasto(-10)
+
+    def test_konstruktori_nollaa_negatiivisen_tilavuuden(self):
+        self.assertEqual(self.varasto.tilavuus, 0)
+
+
+class TestNegatiivisenAlkusaldonVarasto(unittest.TestCase):
+    def setUp(self):
+        self.varasto = Varasto(10, -5)
+
+    def test_konstruktori_nollaa_negatiivisen_alkusaldon(self):
+        self.assertAlmostEqual(self.varasto.saldo, 0)
